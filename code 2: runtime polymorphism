@@ -1,0 +1,80 @@
+#include <iostream>
+#include <string>
+using namespace std;
+// Base class Publication
+class Publication {
+protected:
+	string title;
+	float price;
+	int copies;
+public:
+// Constructor
+	Publication(string t = "", float p = 0.0f, int c = 0)
+		: title(t), price(p), copies(c) {}
+// Virtual function for polymorphism
+	virtual void saleCopy() {
+		cout << "Selling copies of general publication: " << copies <<
+		     endl;
+	}
+// Virtual destructor
+	virtual ~Publication() {}
+};
+// Derived class Book
+class Book : public Publication {
+	string author;
+public:
+// Constructor
+	Book(string t, float p, int c, string a)
+		: Publication(t, p, c), author(a) {}
+// Function to order copies for books
+	void orderCopies(int n) {
+		copies += n;
+		cout << n << " more copies of book ordered." << endl;
+	}
+// Overridden saleCopy()
+	void saleCopy() override {
+		cout << "Book Title: " << title << endl;
+		cout << "Author: " << author << endl;
+		cout << "Sold " << copies << " copies." << endl;
+		cout << "Total Price: $" << (price * copies) << endl;
+	}
+};
+// Derived class Magazine
+class Magazine : public Publication {
+	int orderQty;
+	string currentIssue;
+public:
+// Constructor
+	Magazine(string t, float p, int c, int q, string issue)
+		: Publication(t, p, c), orderQty(q), currentIssue(issue) {}
+// Function to update magazine issue
+	void receiveIssue(string newIssue) {
+		currentIssue = newIssue;
+		cout << "Received new issue: " << currentIssue << endl;
+	}
+// Overridden saleCopy()
+	void saleCopy() override {
+		cout << "Magazine Title: " << title << endl;
+		cout << "Current Issue: " << currentIssue << endl;
+		cout << "Sold " << copies << " copies." << endl;
+		cout << "Total Price: $" << (price * copies) << endl;
+	}
+};
+// Driver code to demonstrate runtime polymorphism
+int main() {
+	Publication* pub;
+	Book b1("C++ Programming", 500.0f, 10, "Bjarne Stroustrup");
+	Magazine m1("Tech Monthly", 150.0f, 20, 50, "October 2025");
+
+	pub = &b1;
+	pub->saleCopy(); 
+	cout << endl;
+
+	pub = &m1;
+	pub->saleCopy(); 
+	cout << endl;
+
+	b1.orderCopies(5);
+	m1.receiveIssue("November 2025");
+	return 0;
+}
