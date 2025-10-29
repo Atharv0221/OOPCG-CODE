@@ -1,0 +1,79 @@
+#include <iostream>
+using namespace std;
+
+// Function to demonstrate division by zero
+void divisionByZero() {
+    int a, b;
+    cout << "\nEnter numerator: ";
+    cin >> a;
+    cout << "Enter denominator: ";
+    cin >> b;
+
+    try {
+        if (b == 0)
+            throw runtime_error("Division by zero error!");
+        cout << "Result = " << (float)a / b << endl;
+    }
+    catch (runtime_error &e) {
+        cout << "Exception Caught: " << e.what() << endl;
+    }
+}
+
+// Function to demonstrate array index out of bounds
+void arrayIndexOutOfBounds() {
+    int size;
+    cout << "\nEnter array size: ";
+    cin >> size;
+
+    int *arr = new int[size];
+    cout << "Enter " << size << " elements:\n";
+    for (int i = 0; i < size; i++) {
+        cin >> arr[i];
+    }
+
+    int index;
+    cout << "Enter index to access: ";
+    cin >> index;
+
+    try {
+        if (index < 0 || index >= size)
+            throw out_of_range("Array index out of bounds!");
+        cout << "Element at index " << index << " = " << arr[index] << endl;
+    }
+    catch (out_of_range &e) {
+        cout << "Exception Caught: " << e.what() << endl;
+    }
+
+    delete[] arr; // Free memory
+}
+
+int main() {
+    int choice;
+
+    do {
+        cout << "\n==============================\n";
+        cout << "     EXCEPTION HANDLING MENU\n";
+        cout << "==============================\n";
+        cout << "1. Division by Zero\n";
+        cout << "2. Array Index Out of Bounds\n";
+        cout << "3. Exit\n";
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1:
+                divisionByZero();
+                break;
+            case 2:
+                arrayIndexOutOfBounds();
+                break;
+            case 3:
+                cout << "Exiting program... Goodbye!\n";
+                break;
+            default:
+                cout << "Invalid choice! Try again.\n";
+        }
+    } while (choice != 3);
+
+    return 0;
+}
