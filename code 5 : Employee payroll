@@ -1,0 +1,85 @@
+#include <iostream>
+#include <string>
+using namespace std;
+
+class Employee {
+protected:
+    string Emp_name, Emp_id, Address, Mail_id, Mobile_no;
+    double BasicPay;
+public:
+    void readDetails() {
+        cout << "Enter Employee Name: ";
+        getline(cin, Emp_name);
+        cout << "Enter Employee ID: ";
+        getline(cin, Emp_id);
+        cout << "Enter Address: ";
+        getline(cin, Address);
+        cout << "Enter Mail ID: ";
+        getline(cin, Mail_id);
+        cout << "Enter Mobile No: ";
+        getline(cin, Mobile_no);
+        cout << "Enter Basic Pay: ";
+        cin >> BasicPay;
+        cin.ignore(); // Clear newline character
+    }
+    void displayDetails() const {
+        cout << "Name: " << Emp_name << "\nID: " << Emp_id 
+             << "\nAddress: " << Address << "\nMail: " << Mail_id 
+             << "\nMobile: " << Mobile_no << endl;
+    }
+    virtual void generateSalarySlip() const {
+        double DA = 0.97 * BasicPay;
+        double HRA = 0.1 * BasicPay;
+        double PF = 0.12 * BasicPay;
+        double SCF = 0.001 * BasicPay;
+        double Gross = BasicPay + DA + HRA;
+        double Net = Gross - PF - SCF;
+
+        cout << "------- Salary Slip -------" << endl;
+        cout << "Basic Pay: " << BasicPay << endl;
+        cout << "DA: " << DA << endl;
+        cout << "HRA: " << HRA << endl;
+        cout << "PF: " << PF << endl;
+        cout << "Staff Club Fund: " << SCF << endl;
+        cout << "Gross Salary: " << Gross << endl;
+        cout << "Net Salary: " << Net << endl;
+    }
+    virtual ~Employee() {}
+};
+
+class Programmer : public Employee {};
+class TeamLead : public Employee {};
+class AssistantProjectManager : public Employee {};
+class ProjectManager : public Employee {};
+
+int main() {
+    Employee *emp = nullptr; int choice;
+    do {
+        cout << "\n---- Employee Payroll System Menu ----\n";
+        cout << "1. Create Programmer\n";
+        cout << "2. Create Team Lead\n";
+        cout << "3. Create Assistant Project Manager\n";
+        cout << "4. Create Project Manager\n";
+        cout << "5. Display Details & Salary Slip\n";
+        cout << "6. Exit\n";
+        cout << "Enter your choice: "; cin >> choice; cin.ignore();
+        switch (choice) {
+            case 1: emp = new Programmer(); emp->readDetails(); break;
+            case 2: emp = new TeamLead(); emp->readDetails(); break;
+            case 3: emp = new AssistantProjectManager(); emp->readDetails(); break;
+            case 4: emp = new ProjectManager(); emp->readDetails(); break;
+            case 5:
+                if (emp) {
+                    emp->displayDetails();
+                    emp->generateSalarySlip();
+                } else {
+                    cout << "No employee record found.\n";
+                }
+                break;
+            case 6: cout << "Exiting...\n"; break;
+            default: cout << "Invalid choice. Try again.\n";
+        }
+    } while (choice != 6);
+    delete emp;
+    return 0;
+}
