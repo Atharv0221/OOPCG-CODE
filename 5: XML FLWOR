@@ -1,0 +1,131 @@
+ASSIGNMENT 5
+============
+
+XML FILE: Library.xml
+---------------------
+
+<library>
+    <books>
+        <book id="101">
+            <title>All Heros</title>
+            <author>samnayik</author>
+            <category>Fantasy</category>
+            <publish>2024</publish>
+        </book>
+        <book id="102">
+            <title>SAAS</title>
+            <author>...</author>
+            <category>...</category>
+            <publish>2002</publish>
+        </book>
+        <book id="103">
+            <title>Software World</title>
+            <author>...</author>
+            <category>...</category>
+            <publish>2020</publish>
+        </book>
+    </books>
+
+    <students>
+        <student roll="33076">
+            <name>Atharv Shinde</name>
+            <department>IT</department>
+            <class>T.Y</class>
+        </student>
+        <student roll="23103">
+            <name>Arnav Jadhav</name>
+            <department>CS</department>
+            <class>S.Y</class>
+        </student>
+        <student roll="33078">
+            <name>Ankit Sonawane</name>
+            <department>IT</department>
+            <class>T.Y</class>
+        </student>
+    </students>
+</library>
+
+
+XQUERY OPERATIONS
+-----------------
+
+1. Display all books
+
+for $book in /library/books/book
+return $book
+
+
+2. Display all students
+
+for $student in /library/students/student
+return $student
+
+
+3. Display only book titles
+
+for $book in /library/books/book
+return $book/title
+
+
+4. Display names of students from IT department
+
+for $student in /library/students/student
+where $student/department = "IT"
+return $student/name
+
+
+5. LET operation
+
+let $students := /library/students/student
+return $students/name
+
+
+6. WHERE operation
+
+for $student in /library/students/student
+where $student/department = "IT"
+return $student/name
+
+
+7. ORDER BY operation
+
+for $book in /library/books/book
+order by xs:integer($book/publish)
+return $book/title
+
+
+8. RETURN operation
+
+for $book in /library/books/book
+return $book/title
+
+
+9. Combined FLWOR query
+
+for $student in /library/students/student
+let $dept := $student/department
+where $dept = "IT"
+order by $student/name
+return $student/name
+
+
+10. Join operation
+
+NOTE:
+The original Assignment 5 XML does not contain an issuedBook element.
+Therefore, a student-book join cannot be performed using the original XML.
+
+If issuedBook is added inside student, for example:
+
+<issuedBook>101</issuedBook>
+
+then the following join query can be used:
+
+for $student in /library/students/student
+for $book in /library/books/book
+where $student/issuedBook = $book/@id
+return
+    <issue>
+        <student>{data($student/name)}</student>
+        <book>{data($book/title)}</book>
+    </issue>
