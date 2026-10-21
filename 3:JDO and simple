@@ -1,0 +1,470 @@
+studentdata:
+package com.student.studentMangement;
+
+import javax.jdo.annotations.IdGeneratorStrategy;
+import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.PrimaryKey;
+
+@PersistenceCapable
+public class studentdata {
+
+    @PrimaryKey
+    @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
+    private long id;
+
+    private String name;
+    private int age;
+    private double marks;
+    private double gpa;
+
+    public studentdata(String name, int age, double marks, double gpa) {
+        this.name = name;
+        this.age = age;
+        this.marks = marks;
+        this.gpa = gpa;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public double getMarks() {
+        return marks;
+    }
+
+    public double getGpa() {
+        return gpa;
+    }
+
+    @Override
+    public String toString() {
+        return "ID: " + id
+                + " | Name: " + name
+                + " | Age: " + age
+                + " | Marks: " + marks
+                + " | GPA: " + gpa;
+    }
+} 
+
+DataMangement:
+
+package com.student.studentMangement;
+
+import java.util.Collection;
+import java.util.Properties;
+
+import javax.jdo.JDOHelper;
+import javax.jdo.PersistenceManager;
+import javax.jdo.PersistenceManagerFactory;
+import javax.jdo.Query;
+
+public class DataMangement {
+
+
+    private static final String DB_FILE = "studentdb.odb";
+
+    public static void main(String[] args) {
+   
+
+        PersistenceManagerFactory pmf = null;
+        PersistenceManager pm = null;
+
+        try {
+
+            // =========================================
+            // OBJECTDB CONNECTION
+            // =========================================
+
+            Properties properties = new Properties();
+
+            properties.setProperty(
+                    "javax.jdo.PersistenceManagerFactoryClass",
+                    "com.objectdb.jdo.PMF"
+            );
+
+            properties.setProperty(
+                    "javax.jdo.option.ConnectionURL",
+                    DB_FILE
+            );
+
+            pmf = JDOHelper.getPersistenceManagerFactory(properties);
+
+            pm = pmf.getPersistenceManager();
+
+            System.out.println("======================================");
+            System.out.println("     STUDENT MANAGEMENT SYSTEM");
+            System.out.println("======================================");
+
+            // 1. Insert students
+            insertStudents(pm);
+
+            // 2. Display all students
+            displayAllStudents(pm);
+
+            // 3. Marks greater than 75
+            displayStudentsAbove75(pm);
+
+            // 4. Age between 18 and 22
+            displayStudentsAge18To22(pm);
+
+            // 5. Sort by marks descending
+            sortStudentsByMarks(pm);
+
+            // 6. Count marks above 80
+            countStudentsAbove80(pm);
+
+            // 7. Top 3 students
+            displayTop3Students(pm);
+
+            // 8. Average age
+            findAverageAge(pm);
+
+            // 9. Maximum GPA
+            findMaximumGPA(pm);
+
+        } catch (Exception e) {
+
+            System.out.println("\nERROR OCCURRED:");
+            e.printStackTrace();
+
+        } finally {
+
+            if (pm != null && !pm.isClosed()) {
+                pm.close();
+            }
+
+            if (pmf != null && !pmf.isClosed()) {
+                pmf.close();
+            }
+        }
+    }
+
+
+    // =====================================================
+    // 1. INSERT AT LEAST 5 STUDENTS
+    // =====================================================
+
+    private static void insertStudents(PersistenceManager pm) {
+
+        System.out.println("\n1. INSERTING STUDENTS");
+        System.out.println("--------------------------------------");
+
+        // Check if students already exist
+        Query query = pm.newQuery(studentdata.class);
+
+        Collection existingStudents =
+                (Collection) query.execute();
+
+        query.closeAll();
+
+        if (!existingStudents.isEmpty()) {
+            System.out.println(
+                    "Students already exist in the database."
+            );
+            return;
+        }
+
+        studentdata s1 =
+                new studentdata("Rahul", 19, 85, 8.5);
+
+        studentdata s2 =
+                new studentdata("Priya", 20, 92, 9.2);
+
+        studentdata s3 =
+                new studentdata("Amit", 18, 76, 7.8);
+
+        studentdata s4 =
+                new studentdata("Sneha", 22, 88, 8.9);
+
+        studentdata s5 =
+                new studentdata("Rohan", 23, 68, 7.0);
+
+        pm.currentTransaction().begin();
+
+        pm.makePersistent(s1);
+        pm.makePersistent(s2);
+        pm.makePersistent(s3);
+        pm.makePersistent(s4);
+        pm.makePersistent(s5);
+
+        pm.currentTransaction().commit();
+
+        System.out.println(
+                "5 student records inserted successfully."
+        );
+    }
+
+
+    // =====================================================
+    // 2. DISPLAY DETAILS OF ALL STUDENTS
+    // =====================================================
+
+    private static void displayAllStudents(
+            PersistenceManager pm) {
+
+        System.out.println("\n2. ALL STUDENTS");
+        System.out.println("--------------------------------------");
+
+        Query query = pm.newQuery(studentdata.class);
+
+        Collection students =
+                (Collection) query.execute();
+
+        for (Object obj : students) {
+
+            studentdata student =
+                    (studentdata) obj;
+
+            System.out.println(student);
+        }
+
+        query.closeAll();
+    }
+
+
+    // =====================================================
+    // 3. STUDENTS WHOSE MARKS ARE GREATER THAN 75
+    // =====================================================
+
+    private static void displayStudentsAbove75(
+            PersistenceManager pm) {
+
+        System.out.println("\n3. STUDENTS WITH MARKS > 75");
+        System.out.println("--------------------------------------");
+
+        Query query = pm.newQuery(studentdata.class);
+
+        query.setFilter("this.marks > 75");
+
+        Collection students =
+                (Collection) query.execute();
+
+        for (Object obj : students) {
+
+            studentdata student =
+                    (studentdata) obj;
+
+            System.out.println(student);
+        }
+
+        query.closeAll();
+    }
+
+
+    // =====================================================
+    // 4. STUDENTS WHOSE AGE IS BETWEEN 18 AND 22
+    // =====================================================
+
+    private static void displayStudentsAge18To22(
+            PersistenceManager pm) {
+
+        System.out.println("\n4. STUDENTS AGE BETWEEN 18 AND 22");
+        System.out.println("--------------------------------------");
+
+        Query query = pm.newQuery(studentdata.class);
+
+        query.setFilter(
+                "this.age >= 18 && this.age <= 22"
+        );
+
+        Collection students =
+                (Collection) query.execute();
+
+        for (Object obj : students) {
+
+            studentdata student =
+                    (studentdata) obj;
+
+            System.out.println(student);
+        }
+
+        query.closeAll();
+    }
+
+
+    // =====================================================
+    // 5. SORT STUDENTS BY MARKS DESCENDING
+    // =====================================================
+
+    private static void sortStudentsByMarks(
+            PersistenceManager pm) {
+
+        System.out.println(
+                "\n5. STUDENTS SORTED BY MARKS DESCENDING"
+        );
+
+        System.out.println("--------------------------------------");
+
+        Query query = pm.newQuery(studentdata.class);
+
+        query.setOrdering("this.marks descending");
+
+        Collection students =
+                (Collection) query.execute();
+
+        for (Object obj : students) {
+
+            studentdata student =
+                    (studentdata) obj;
+
+            System.out.println(student);
+        }
+
+        query.closeAll();
+    }
+
+
+    // =====================================================
+    // 6. COUNT STUDENTS WHO SCORED ABOVE 80
+    // =====================================================
+
+    private static void countStudentsAbove80(
+            PersistenceManager pm) {
+
+        System.out.println(
+                "\n6. COUNT STUDENTS WITH MARKS > 80"
+        );
+
+        System.out.println("--------------------------------------");
+
+        Query query = pm.newQuery(studentdata.class);
+
+        query.setFilter("this.marks > 80");
+
+        Collection students =
+                (Collection) query.execute();
+
+        System.out.println(
+                "Number of students scoring above 80: "
+                + students.size()
+        );
+
+        query.closeAll();
+    }
+
+
+    // =====================================================
+    // 7. DISPLAY TOP 3 STUDENTS BASED ON MARKS
+    // =====================================================
+
+    private static void displayTop3Students(
+            PersistenceManager pm) {
+
+        System.out.println("\n7. TOP 3 STUDENTS");
+        System.out.println("--------------------------------------");
+
+        Query query = pm.newQuery(studentdata.class);
+
+        // Highest marks first
+        query.setOrdering("this.marks descending");
+
+        // First 3 records only
+        query.setRange(0, 3);
+
+        Collection students =
+                (Collection) query.execute();
+
+        int rank = 1;
+
+        for (Object obj : students) {
+
+            studentdata student =
+                    (studentdata) obj;
+
+            System.out.println(
+                    "Rank " + rank + ": " + student
+            );
+
+            rank++;
+        }
+
+        query.closeAll();
+    }
+
+
+    // =====================================================
+    // 8. FIND AVERAGE AGE
+    // =====================================================
+
+    private static void findAverageAge(
+            PersistenceManager pm) {
+
+        System.out.println("\n8. AVERAGE AGE");
+        System.out.println("--------------------------------------");
+
+        Query query = pm.newQuery(studentdata.class);
+
+        Collection students =
+                (Collection) query.execute();
+
+        int totalAge = 0;
+        int count = 0;
+
+        for (Object obj : students) {
+
+            studentdata student =
+                    (studentdata) obj;
+
+            totalAge += student.getAge();
+            count++;
+        }
+
+        double averageAge = 0;
+
+        if (count > 0) {
+            averageAge =
+                    (double) totalAge / count;
+        }
+
+        System.out.println(
+                "Average age of students: "
+                + averageAge
+        );
+
+        query.closeAll();
+    }
+
+
+    // =====================================================
+    // 9. FIND MAXIMUM GPA
+    // =====================================================
+
+    private static void findMaximumGPA(
+            PersistenceManager pm) {
+
+        System.out.println("\n9. MAXIMUM GPA");
+        System.out.println("--------------------------------------");
+
+        Query query = pm.newQuery(studentdata.class);
+
+        Collection students =
+                (Collection) query.execute();
+
+        double maximumGPA = 0;
+
+        for (Object obj : students) {
+
+            studentdata student =
+                    (studentdata) obj;
+
+            if (student.getGpa() > maximumGPA) {
+                maximumGPA = student.getGpa();
+            }
+        }
+
+        System.out.println(
+                "Maximum GPA: " + maximumGPA
+        );
+
+        query.closeAll();
+    }
+} 
