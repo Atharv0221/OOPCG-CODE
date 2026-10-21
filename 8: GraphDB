@@ -1,0 +1,149 @@
+1. CREATE THE DATABASE
+----------------------
+CREATE DATABASE university;
+
+Switch to the university database in Neo4j Browser:
+:use university
+
+2. CREATE THE UNIVERSITY NODE
+-----------------------------
+CREATE (u:University {
+    name: "Savitribai Phule Pune University",
+    location: "Pune, Maharashtra"
+});
+
+3. CREATE DEPARTMENT NODES
+--------------------------
+CREATE
+    (d1:Department {
+        name: "Computer Science & Engineering",
+        code: "CSE"
+    }),
+    (d2:Department {
+        name: "Information Technology",
+        code: "IT"
+    });
+
+4. CREATE COURSE NODES
+----------------------
+CREATE
+    (c1:Course {
+        code: "CS201",
+        title: "Database Management Systems",
+        credits: 4
+    }),
+    (c2:Course {
+        code: "CS202",
+        title: "Data Structures",
+        credits: 4
+    });
+
+5. CREATE A PROFESSOR NODE
+--------------------------
+CREATE (p:Professor {
+    id: "PROF-101",
+    name: "Dr. A. Sharma",
+    designation: "Associate Professor"
+});
+
+6. CREATE STUDENT NODES
+-----------------------
+CREATE
+    (s1:Student {
+        roll_no: "STU-01",
+        name: "Rohan Patil",
+        year: "2nd Year"
+    }),
+    (s2:Student {
+        roll_no: "STU-02",
+        name: "Priya Sharma",
+        year: "2nd Year"
+    });
+
+7. CONNECT UNIVERSITY TO DEPARTMENTS
+------------------------------------
+MATCH (u:University),
+      (d1:Department {code: "CSE"}),
+      (d2:Department {code: "IT"})
+CREATE
+    (u)-[:HAS_DEPARTMENT]->(d1),
+    (u)-[:HAS_DEPARTMENT]->(d2);
+
+8. CONNECT DEPARTMENTS TO COURSES
+---------------------------------
+MATCH (d1:Department {code: "CSE"}),
+      (d2:Department {code: "IT"}),
+      (c1:Course {code: "CS201"}),
+      (c2:Course {code: "CS202"})
+CREATE
+    (d1)-[:OFFERS]->(c1),
+    (d2)-[:OFFERS]->(c2);
+
+9. CONNECT PROFESSOR TO COURSE
+------------------------------
+MATCH (p:Professor {id: "PROF-101"}),
+      (c:Course {code: "CS201"})
+CREATE (p)-[:TEACHES {
+    semester: "Fall 2026"
+}]->(c);
+
+10. ENROLL STUDENTS IN COURSES
+------------------------------
+MATCH (s1:Student {roll_no: "STU-01"}),
+      (s2:Student {roll_no: "STU-02"}),
+      (c1:Course {code: "CS201"}),
+      (c2:Course {code: "CS202"})
+CREATE
+    (s1)-[:ENROLLED_IN {grade: "A"}]->(c1),
+    (s2)-[:ENROLLED_IN {grade: "A+"}]->(c2);
+
+11. VISUALIZE ALL NODES
+-----------------------
+MATCH (n)
+RETURN n;
+
+12. VISUALIZE ALL CONNECTED NODES AND RELATIONSHIPS
+--------------------------------------------------
+MATCH (a)-[r]->(b)
+RETURN a, r, b;
+
+13. DISPLAY ALL STUDENTS
+------------------------
+MATCH (s:Student)
+RETURN s;
+
+14. DISPLAY COURSE DETAILS
+--------------------------
+MATCH (c:Course)
+RETURN c.code, c.title, c.credits;
+
+15. DISPLAY DEPARTMENTS AND THEIR COURSES
+-----------------------------------------
+MATCH (d:Department)-[:OFFERS]->(c:Course)
+RETURN d.name AS Department, c.title AS Course;
+
+16. DISPLAY PROFESSOR AND COURSES TAUGHT
+----------------------------------------
+MATCH (p:Professor)-[:TEACHES]->(c:Course)
+RETURN p.name AS Professor, c.title AS Course;
+
+17. DISPLAY STUDENTS, COURSES, AND GRADES
+-----------------------------------------
+MATCH (s:Student)-[r:ENROLLED_IN]->(c:Course)
+RETURN s.name AS Student,
+       c.title AS Course,
+       r.grade AS Grade;
+
+18. OPTIONAL: COUNT NODES BY LABEL
+----------------------------------
+MATCH (n)
+RETURN labels(n) AS Labels, count(*) AS Total
+ORDER BY Labels;
+
+19. OPTIONAL: DELETE ALL DATA
+-----------------------------
+WARNING: This removes every node and relationship in the selected database.
+Do not run unless you intentionally want to reset the database.
+
+MATCH (n)
+DETACH DELETE n;
