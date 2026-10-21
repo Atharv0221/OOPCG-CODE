@@ -1,0 +1,642 @@
+Student:
+package com.student.studentManagement;
+import javax.jdo.*;
+import javax.jdo.annotations.IdGeneratorStrategy;
+import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.PrimaryKey;
+@PersistenceCapable
+public class Student {
+   @PrimaryKey
+   @Persistent(valueStrategy = IdGeneratorStrategy.INCREMENT)
+   private long id;
+   private String name;
+  
+   @Persistent
+   private Course course;
+   public Student(String name, Course course) {
+       this.name = name;
+       this.course = course;
+   }
+   public long getId() { return id; }
+   public String getName() { return name; }
+   public void setName(String name) { this.name = name; }
+   public Course getCourse() { return course; }
+   public void setCourse(Course course) { this.course = course; }
+}
+
+
+
+
+Course:
+package com.student.studentManagement;
+import javax.jdo.*;
+import javax.jdo.annotations.IdGeneratorStrategy;
+import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.PrimaryKey;
+@PersistenceCapable
+public class Course {
+   @PrimaryKey
+   @Persistent(valueStrategy = IdGeneratorStrategy.INCREMENT)
+   private long id;
+   private String title;
+   public Course(String title) {
+       this.title = title;
+   }
+   public long getId() { return id; }
+   public String getTitle() { return title; }
+   public void setTitle(String title) { this.title = title; }
+}
+
+Faculty:
+package com.student.studentManagement;
+import javax.jdo.*;
+import javax.jdo.annotations.IdGeneratorStrategy;
+import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.PrimaryKey;
+@PersistenceCapable
+public class Faculty {
+   @PrimaryKey
+   @Persistent(valueStrategy = IdGeneratorStrategy.INCREMENT)
+   private long id;
+   private String name;
+   private String department;
+   public Faculty(String name, String department) {
+       this.name = name;
+       this.department = department;
+   }
+   public long getId() { return id; }
+   public String getName() { return name; }
+   public String getDepartment() { return department; }
+}
+
+
+
+
+Main
+
+package com.demo.StudentManagemnt;
+
+import javax.jdo.*;
+import java.util.List;
+import java.util.Scanner;
+
+public class Main {
+
+    // -----------------------------------------------------
+    // Persistence Manager Factory
+    // -----------------------------------------------------
+    private static final PersistenceManagerFactory pmf =
+            JDOHelper.getPersistenceManagerFactory("StudentManagemnt");
+
+    // -----------------------------------------------------
+    // Main Method
+    // -----------------------------------------------------
+    public static void main(String[] args) {
+
+        Scanner scanner = new Scanner(System.in);
+
+        boolean running = true;
+
+        while (running) {
+
+            System.out.println();
+            System.out.println("======================================");
+            System.out.println("       STUDENT MANAGEMENT SYSTEM");
+            System.out.println("======================================");
+            System.out.println("1. Add Student & Course");
+            System.out.println("2. Add Faculty");
+            System.out.println("3. View All Students");
+            System.out.println("4. View All Faculty");
+            System.out.println("5. Update Student Name");
+            System.out.println("6. Delete Student");
+            System.out.println("7. Exit");
+            System.out.println("======================================");
+
+            System.out.print("Choose an option: ");
+
+            int choice;
+
+            try {
+                choice = Integer.parseInt(scanner.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("Please enter a valid number.");
+                continue;
+            }
+
+            switch (choice) {
+
+                // -----------------------------------------
+                // 1. ADD STUDENT & COURSE
+                // -----------------------------------------
+                case 1:
+                    addStudent(scanner);
+                    break;
+
+                // -----------------------------------------
+                // 2. ADD FACULTY
+                // -----------------------------------------
+                case 2:
+                    addFaculty(scanner);
+                    break;
+
+                // -----------------------------------------
+                // 3. VIEW ALL STUDENTS
+                // -----------------------------------------
+                case 3:
+                    viewStudents();
+                    break;
+
+                // -----------------------------------------
+                // 4. VIEW ALL FACULTY
+                // -----------------------------------------
+                case 4:
+                    viewFaculty();
+                    break;
+
+                // -----------------------------------------
+                // 5. UPDATE STUDENT
+                // -----------------------------------------
+                case 5:
+                    updateStudent(scanner);
+                    break;
+
+                // -----------------------------------------
+                // 6. DELETE STUDENT
+                // -----------------------------------------
+                case 6:
+                    deleteStudent(scanner);
+                    break;
+
+                // -----------------------------------------
+                // 7. EXIT
+                // -----------------------------------------
+                case 7:
+                    running = false;
+                    break;
+
+                // -----------------------------------------
+                // INVALID OPTION
+                // -----------------------------------------
+                default:
+                    System.out.println(
+                            "Invalid selection. Try again."
+                    );
+                    break;
+            }
+        }
+
+        // Close resources
+        pmf.close();
+        scanner.close();
+
+        System.out.println();
+        System.out.println("Application closed.");
+    }
+
+
+    // =====================================================
+    // CREATE - ADD STUDENT & COURSE
+    // =====================================================
+
+    private static void addStudent(Scanner scanner) {
+
+        PersistenceManager pm =
+                pmf.getPersistenceManager();
+
+        Transaction tx =
+                pm.currentTransaction();
+
+        try {
+
+            System.out.println();
+            System.out.println("---------- ADD STUDENT & COURSE ----------");
+
+            // Student Name
+            System.out.print("Enter Student Name: ");
+            String studentName = scanner.nextLine();
+
+            // Course Title
+            System.out.print("Enter Course Title: ");
+            String courseTitle = scanner.nextLine();
+
+            // Start transaction
+            tx.begin();
+
+            // Create Course
+            Course course =
+                    new Course(courseTitle);
+
+            // Create Student
+            Student student =
+                    new Student(studentName, course);
+
+            // Save Student
+            pm.makePersistent(student);
+
+            // Commit transaction
+            tx.commit();
+
+            System.out.println();
+            System.out.println(
+                    "Success: Student saved with ID: "
+                            + student.getId()
+            );
+
+        } catch (Exception e) {
+
+            if (tx.isActive()) {
+                tx.rollback();
+            }
+
+            System.out.println();
+            System.out.println(
+                    "Error saving student: "
+                            + e.getMessage()
+            );
+
+            e.printStackTrace();
+
+        } finally {
+
+            pm.close();
+        }
+    }
+
+
+    // =====================================================
+    // CREATE - ADD FACULTY
+    // =====================================================
+
+    private static void addFaculty(Scanner scanner) {
+
+        PersistenceManager pm =
+                pmf.getPersistenceManager();
+
+        Transaction tx =
+                pm.currentTransaction();
+
+        try {
+
+            System.out.println();
+            System.out.println("---------- ADD FACULTY ----------");
+
+            // Faculty Name
+            System.out.print("Enter Faculty Name: ");
+            String name = scanner.nextLine();
+
+            // Department
+            System.out.print("Enter Department: ");
+            String dept = scanner.nextLine();
+
+            // Start transaction
+            tx.begin();
+
+            // Create Faculty
+            Faculty faculty =
+                    new Faculty(name, dept);
+
+            // Save Faculty
+            pm.makePersistent(faculty);
+
+            // Commit
+            tx.commit();
+
+            System.out.println();
+            System.out.println(
+                    "Success: Faculty saved with ID: "
+                            + faculty.getId()
+            );
+
+        } catch (Exception e) {
+
+            if (tx.isActive()) {
+                tx.rollback();
+            }
+
+            System.out.println();
+            System.out.println(
+                    "Error saving faculty: "
+                            + e.getMessage()
+            );
+
+            e.printStackTrace();
+
+        } finally {
+
+            pm.close();
+        }
+    }
+
+
+    // =====================================================
+    // READ - VIEW ALL STUDENTS
+    // =====================================================
+
+    private static void viewStudents() {
+
+        PersistenceManager pm =
+                pmf.getPersistenceManager();
+
+        Query<Student> query = null;
+
+        try {
+
+            System.out.println();
+            System.out.println("---------- REGISTERED STUDENTS ----------");
+
+            // Create query
+            query = pm.newQuery(Student.class);
+
+            @SuppressWarnings("unchecked")
+            List<Student> students =
+                    (List<Student>) query.execute();
+
+            if (students.isEmpty()) {
+
+                System.out.println(
+                        "No student records found."
+                );
+
+            } else {
+
+                for (Student s : students) {
+
+                    String courseName =
+                            (s.getCourse() != null)
+                                    ? s.getCourse().getTitle()
+                                    : "Unenrolled";
+
+                    System.out.println(
+                            "ID: " + s.getId()
+                                    + " | Name: " + s.getName()
+                                    + " | Course: " + courseName
+                    );
+                }
+            }
+
+        } catch (Exception e) {
+
+            System.out.println();
+            System.out.println(
+                    "Error viewing students: "
+                            + e.getMessage()
+            );
+
+            e.printStackTrace();
+
+        } finally {
+
+            if (query != null) {
+                query.closeAll();
+            }
+
+            pm.close();
+        }
+    }
+
+
+    // =====================================================
+    // READ - VIEW ALL FACULTY
+    // =====================================================
+
+    private static void viewFaculty() {
+
+        PersistenceManager pm =
+                pmf.getPersistenceManager();
+
+        Query<Faculty> query = null;
+
+        try {
+
+            System.out.println();
+            System.out.println("---------- FACULTY LIST ----------");
+
+            // Create query
+            query = pm.newQuery(Faculty.class);
+
+            @SuppressWarnings("unchecked")
+            List<Faculty> facultyList =
+                    (List<Faculty>) query.execute();
+
+            if (facultyList.isEmpty()) {
+
+                System.out.println(
+                        "No faculty records found."
+                );
+
+            } else {
+
+                for (Faculty f : facultyList) {
+
+                    System.out.println(
+                            "ID: " + f.getId()
+                                    + " | Name: " + f.getName()
+                                    + " | Dept: " + f.getDepartment()
+                    );
+                }
+            }
+
+        } catch (Exception e) {
+
+            System.out.println();
+            System.out.println(
+                    "Error viewing faculty: "
+                            + e.getMessage()
+            );
+
+            e.printStackTrace();
+
+        } finally {
+
+            if (query != null) {
+                query.closeAll();
+            }
+
+            pm.close();
+        }
+    }
+
+
+    // =====================================================
+    // UPDATE - UPDATE STUDENT NAME
+    // =====================================================
+
+    private static void updateStudent(Scanner scanner) {
+
+        PersistenceManager pm =
+                pmf.getPersistenceManager();
+
+        Transaction tx =
+                pm.currentTransaction();
+
+        try {
+
+            System.out.println();
+            System.out.println("---------- UPDATE STUDENT ----------");
+
+            System.out.print(
+                    "Enter Student ID to update: "
+            );
+
+            long id =
+                    Long.parseLong(scanner.nextLine());
+
+            tx.begin();
+
+            Student student;
+
+            try {
+
+                student =
+                        pm.getObjectById(
+                                Student.class,
+                                id
+                        );
+
+            } catch (JDOObjectNotFoundException e) {
+
+                System.out.println();
+                System.out.println(
+                        "Error: Student ID not found."
+                );
+
+                tx.rollback();
+                return;
+            }
+
+            System.out.println(
+                    "Current Name: "
+                            + student.getName()
+            );
+
+            System.out.print(
+                    "Enter New Name: "
+            );
+
+            String newName =
+                    scanner.nextLine();
+
+            student.setName(newName);
+
+            // Commit updated object
+            tx.commit();
+
+            System.out.println();
+            System.out.println(
+                    "Success: Student record updated."
+            );
+
+        } catch (NumberFormatException e) {
+
+            System.out.println(
+                    "Error: Please enter a valid Student ID."
+            );
+
+        } catch (Exception e) {
+
+            if (tx.isActive()) {
+                tx.rollback();
+            }
+
+            System.out.println();
+            System.out.println(
+                    "Error updating student: "
+                            + e.getMessage()
+            );
+
+            e.printStackTrace();
+
+        } finally {
+
+            pm.close();
+        }
+    }
+
+
+    // =====================================================
+    // DELETE - DELETE STUDENT
+    // =====================================================
+
+    private static void deleteStudent(Scanner scanner) {
+
+        PersistenceManager pm =
+                pmf.getPersistenceManager();
+
+        Transaction tx =
+                pm.currentTransaction();
+
+        try {
+
+            System.out.println();
+            System.out.println("---------- DELETE STUDENT ----------");
+
+            System.out.print(
+                    "Enter Student ID to delete: "
+            );
+
+            long id =
+                    Long.parseLong(scanner.nextLine());
+
+            tx.begin();
+
+            Student student;
+
+            try {
+
+                student =
+                        pm.getObjectById(
+                                Student.class,
+                                id
+                        );
+
+            } catch (JDOObjectNotFoundException e) {
+
+                System.out.println();
+                System.out.println(
+                        "Error: Student ID not found."
+                );
+
+                tx.rollback();
+                return;
+            }
+
+            // Delete student
+            pm.deletePersistent(student);
+
+            // Commit deletion
+            tx.commit();
+
+            System.out.println();
+            System.out.println(
+                    "Success: Student removed from database."
+            );
+
+        } catch (NumberFormatException e) {
+
+            System.out.println(
+                    "Error: Please enter a valid Student ID."
+            );
+
+        } catch (Exception e) {
+
+            if (tx.isActive()) {
+                tx.rollback();
+            }
+
+            System.out.println();
+            System.out.println(
+                    "Error deleting student: "
+                            + e.getMessage()
+            );
+
+            e.printStackTrace();
+
+        } finally {
+
+            pm.close();
+        }
+    }
+}
