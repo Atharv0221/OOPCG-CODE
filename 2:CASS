@@ -1,0 +1,328 @@
+A. START CASSANDRA
+------------------
+
+Open terminal:
+
+cqlsh
+
+Check connection:
+cqlsh
+
+Typical connection:
+Connected to Test Cluster at 127.0.0.1:9042
+
+
+B. KEYSPACE COMMANDS
+--------------------
+
+Create keyspace:
+CREATE KEYSPACE collegeDB
+WITH replication = {
+    'class':'SimpleStrategy',
+    'replication_factor':1
+};
+
+Show keyspaces:
+DESCRIBE KEYSPACES;
+
+Use keyspace:
+USE collegeDB;
+
+Describe current keyspace:
+DESCRIBE KEYSPACE collegeDB;
+
+
+C. CREATE TABLE
+---------------
+
+Create students table:
+CREATE TABLE students (
+    rollno INT PRIMARY KEY,
+    name VARCHAR,
+    dept VARCHAR,
+    email VARCHAR,
+    cgpa DOUBLE
+);
+
+Describe table:
+DESCRIBE students;
+
+
+D. INSERT COMMANDS
+------------------
+
+Insert one student:
+INSERT INTO students
+(rollno, name, dept, email, cgpa)
+VALUES
+(101, 'Amit', 'Computer', 'amit@gmail.com', 8.5);
+
+Insert another:
+INSERT INTO students
+(rollno, name, dept, email, cgpa)
+VALUES
+(102, 'Ankit', 'IT', 'ankit@gmail.com', 9.0);
+
+Insert another:
+INSERT INTO students
+(rollno, name, dept, email, cgpa)
+VALUES
+(103, 'Atharv', 'IT', 'atharv@gmail.com', 8.42);
+
+Insert another:
+INSERT INTO students
+(rollno, name, dept, email, cgpa)
+VALUES
+(104, 'Priya', 'AIML', 'priya@gmail.com', 9.1);
+
+
+E. SELECT COMMANDS
+------------------
+
+Display all students:
+SELECT * FROM students;
+
+Find using primary key:
+SELECT * FROM students
+WHERE rollno = 101;
+
+Find multiple primary-key values:
+SELECT * FROM students
+WHERE rollno IN (101,102,103);
+
+Find department using ALLOW FILTERING:
+SELECT * FROM students
+WHERE dept = 'IT'
+ALLOW FILTERING;
+
+Find by name using ALLOW FILTERING:
+SELECT * FROM students
+WHERE name = 'Amit'
+ALLOW FILTERING;
+
+
+F. UPDATE COMMANDS
+------------------
+
+Update CGPA:
+UPDATE students
+SET cgpa = 9.3
+WHERE rollno = 103;
+
+Update name:
+UPDATE students
+SET name = 'Amit Kumar'
+WHERE rollno = 101;
+
+Update email:
+UPDATE students
+SET email = 'newemail@gmail.com'
+WHERE rollno = 101;
+
+
+G. DELETE COMMANDS
+------------------
+
+Delete one row:
+DELETE FROM students
+WHERE rollno = 104;
+
+Delete one column value:
+DELETE email FROM students
+WHERE rollno = 101;
+
+
+H. DROP COMMANDS
+----------------
+
+Drop table:
+DROP TABLE students;
+
+Drop keyspace:
+DROP KEYSPACE collegeDB;
+
+
+I. PRIMARY KEY RESTRICTIONS
+---------------------------
+
+Primary-key based query:
+SELECT * FROM students
+WHERE rollno = 101;
+
+Non-primary-key query:
+SELECT * FROM students
+WHERE name = 'Amit';
+
+This can produce an error because name is not a primary-key column.
+
+Force filtering:
+SELECT * FROM students
+WHERE name = 'Amit'
+ALLOW FILTERING;
+
+Department query:
+SELECT * FROM students
+WHERE dept = 'Computer'
+ALLOW FILTERING;
+
+
+J. COMPOSITE PRIMARY KEY EXAMPLE
+--------------------------------
+
+Create a table with composite primary key:
+
+CREATE TABLE student_department (
+    dept VARCHAR,
+    rollno INT,
+    name VARCHAR,
+    cgpa DOUBLE,
+    PRIMARY KEY (dept, rollno)
+);
+
+Here:
+dept = partition key
+rollno = clustering column
+
+Valid query:
+SELECT * FROM student_department
+WHERE dept = 'IT';
+
+Valid query:
+SELECT * FROM student_department
+WHERE dept = 'IT'
+AND rollno = 103;
+
+The partition key should normally be specified before querying
+the clustering column.
+
+
+K. INDEXING
+-----------
+
+Create index on department:
+CREATE INDEX ON students(dept);
+
+Create index on name:
+CREATE INDEX ON students(name);
+
+Drop index:
+DROP INDEX students_dept_idx;
+
+
+L. USEFUL CASSANDRA COMMANDS
+----------------------------
+
+Show keyspaces:
+DESCRIBE KEYSPACES;
+
+Use database:
+USE collegeDB;
+
+Describe keyspace:
+DESCRIBE KEYSPACE collegeDB;
+
+Describe table:
+DESCRIBE students;
+
+Show table data:
+SELECT * FROM students;
+
+
+============================================================
+QUICK PRACTICAL SEQUENCE
+============================================================
+
+MONGODB
+-------
+
+cd "C:\Program Files\MongoDB\Server\4.4\bin"
+mongo
+use CollegeDB
+db.createCollection("students")
+
+db.students.insertMany([
+    {name:"Amit", department:"CSE", marks:80, age:20},
+    {name:"Rahul", department:"CSE", marks:75, age:21},
+    {name:"Sneha", department:"IT", marks:90, age:20},
+    {name:"Priya", department:"IT", marks:85, age:22},
+    {name:"Rohan", department:"ECE", marks:70, age:21}
+])
+
+db.students.find().pretty()
+
+db.students.updateOne(
+    {name:"Amit"},
+    {$set:{marks:85}}
+)
+
+db.students.deleteOne({name:"Rohan"})
+
+db.students.aggregate([
+    {$group:{
+        _id:"$department",
+        AverageMarks:{$avg:"$marks"}
+    }}
+])
+
+db.students.createIndex({name:1})
+db.students.getIndexes()
+
+db.students.find({name:"Amit"})
+    .explain("executionStats")
+
+
+CASSANDRA
+---------
+
+cqlsh
+
+CREATE KEYSPACE collegeDB
+WITH replication = {
+    'class':'SimpleStrategy',
+    'replication_factor':1
+};
+
+USE collegeDB;
+
+CREATE TABLE students (
+    rollno INT PRIMARY KEY,
+    name VARCHAR,
+    dept VARCHAR,
+    email VARCHAR,
+    cgpa DOUBLE
+);
+
+INSERT INTO students
+(rollno,name,dept,email,cgpa)
+VALUES
+(101,'Amit','Computer','amit@gmail.com',8.5);
+
+INSERT INTO students
+(rollno,name,dept,email,cgpa)
+VALUES
+(102,'Ankit','IT','ankit@gmail.com',9.0);
+
+INSERT INTO students
+(rollno,name,dept,email,cgpa)
+VALUES
+(103,'Atharv','IT','atharv@gmail.com',8.42);
+
+SELECT * FROM students;
+
+UPDATE students
+SET cgpa=9.3
+WHERE rollno=103;
+
+DELETE FROM students
+WHERE rollno=102;
+
+SELECT * FROM students
+WHERE dept='IT'
+ALLOW FILTERING;
+
+SELECT * FROM students
+WHERE rollno=101;
+
+SELECT * FROM students
+WHERE name='Amit'
+ALLOW FILTERING;
