@@ -1,0 +1,348 @@
+A. START MONGODB ON WINDOWS
+----------------------------
+
+Open Command Prompt:
+
+cd "C:\Program Files\MongoDB\Server\4.4\bin"
+mongo
+
+Check MongoDB shell:
+mongo --version
+
+
+B. DATABASE COMMANDS
+--------------------
+
+Show databases:
+show dbs
+
+Create/select database:
+use CollegeDB
+
+Check current database:
+db
+
+Create collection:
+db.createCollection("students")
+
+Show collections:
+show collections
+
+Drop current database:
+db.dropDatabase()
+
+
+C. INSERT COMMANDS
+------------------
+
+Insert one document:
+db.students.insertOne({
+    name:"Amit",
+    department:"CSE",
+    marks:80,
+    age:20
+})
+
+Insert multiple documents:
+db.students.insertMany([
+    {name:"Amit", department:"CSE", marks:80, age:20},
+    {name:"Rahul", department:"CSE", marks:75, age:21},
+    {name:"Sneha", department:"IT", marks:90, age:20},
+    {name:"Priya", department:"IT", marks:85, age:22},
+    {name:"Rohan", department:"ECE", marks:70, age:21}
+])
+
+Older MongoDB style:
+db.students.insert({name:"Amit", marks:80})
+
+
+D. DISPLAY / FIND COMMANDS
+--------------------------
+
+Display all documents:
+db.students.find()
+
+Display in readable format:
+db.students.find().pretty()
+
+Find one document:
+db.students.findOne()
+
+Find by field:
+db.students.find({name:"Amit"})
+
+Find by marks:
+db.students.find({marks:80})
+
+Find marks greater than 80:
+db.students.find({marks:{$gt:80}})
+
+Find marks less than 80:
+db.students.find({marks:{$lt:80}})
+
+Find marks greater than or equal to 80:
+db.students.find({marks:{$gte:80}})
+
+Find marks less than or equal to 80:
+db.students.find({marks:{$lte:80}})
+
+Find documents using AND:
+db.students.find({
+    department:"IT",
+    marks:{$gt:80}
+})
+
+Find using OR:
+db.students.find({
+    $or:[
+        {department:"IT"},
+        {marks:{$gt:85}}
+    ]
+})
+
+Find using IN:
+db.students.find({
+    department:{$in:["IT","CSE"]}
+})
+
+
+E. UPDATE COMMANDS
+------------------
+
+Update one document:
+db.students.updateOne(
+    {name:"Amit"},
+    {$set:{marks:85}}
+)
+
+Update multiple documents:
+db.students.updateMany(
+    {department:"IT"},
+    {$set:{college:"MCOE"}}
+)
+
+Older MongoDB style:
+db.students.update(
+    {name:"Amit"},
+    {$set:{marks:85}}
+)
+
+Increase marks:
+db.students.updateOne(
+    {name:"Amit"},
+    {$inc:{marks:5}}
+)
+
+
+F. DELETE COMMANDS
+------------------
+
+Delete one document:
+db.students.deleteOne({name:"Amit"})
+
+Delete multiple documents:
+db.students.deleteMany({department:"IT"})
+
+Older MongoDB style:
+db.students.remove({name:"Amit"})
+
+Drop collection:
+db.students.drop()
+
+
+G. SORT COMMANDS
+----------------
+
+Sort ascending:
+db.students.find().sort({marks:1})
+
+Sort descending:
+db.students.find().sort({marks:-1})
+
+Limit results:
+db.students.find().limit(3)
+
+
+H. COUNT COMMANDS
+-----------------
+
+Count documents:
+db.students.count()
+
+Count documents using countDocuments:
+db.students.countDocuments({})
+
+Count students with marks greater than 80:
+db.students.countDocuments({marks:{$gt:80}})
+
+
+I. AGGREGATION FRAMEWORK
+------------------------
+
+Total marks by department:
+db.students.aggregate([
+    {$group:{
+        _id:"$department",
+        TotalMarks:{$sum:"$marks"}
+    }}
+])
+
+Average marks by department:
+db.students.aggregate([
+    {$group:{
+        _id:"$department",
+        AverageMarks:{$avg:"$marks"}
+    }}
+])
+
+Highest marks by department:
+db.students.aggregate([
+    {$group:{
+        _id:"$department",
+        HighestMarks:{$max:"$marks"}
+    }}
+])
+
+Lowest marks by department:
+db.students.aggregate([
+    {$group:{
+        _id:"$department",
+        LowestMarks:{$min:"$marks"}
+    }}
+])
+
+Count students by department:
+db.students.aggregate([
+    {$group:{
+        _id:"$department",
+        Count:{$sum:1}
+    }}
+])
+
+Sort using aggregation:
+db.students.aggregate([
+    {$sort:{marks:-1}}
+])
+
+Filter using aggregation:
+db.students.aggregate([
+    {$match:{marks:{$gt:80}}}
+])
+
+
+J. MAP REDUCE
+-------------
+
+Map function:
+var mapFunction = function() {
+    emit(this.department, this.marks);
+};
+
+Reduce function:
+var reduceFunction = function(key, values) {
+    return Array.sum(values);
+};
+
+Run MapReduce:
+db.students.mapReduce(
+    mapFunction,
+    reduceFunction,
+    {out:"map_example"}
+)
+
+Display MapReduce result:
+db.map_example.find()
+
+
+K. INDEXING
+-----------
+
+Create ascending index:
+db.students.createIndex({name:1})
+
+Create compound index:
+db.students.createIndex({
+    department:1,
+    marks:-1
+})
+
+Create text index:
+db.students.createIndex({name:"text"})
+
+Display indexes:
+db.students.getIndexes()
+
+Drop index:
+db.students.dropIndex("name_1")
+
+Drop all indexes except _id:
+db.students.dropIndexes()
+
+
+L. UNIQUE INDEX
+---------------
+
+Create collection:
+db.createCollection("teacher")
+
+Create unique index:
+db.teacher.ensureIndex(
+    {id:1},
+    {unique:true}
+)
+
+Newer syntax:
+db.teacher.createIndex(
+    {id:1},
+    {unique:true}
+)
+
+
+M. EXPLAIN / INDEX ADVANTAGE
+----------------------------
+
+Before index:
+db.students.dropIndex("name_1")
+
+db.students.find(
+    {name:"Amit"}
+).explain("executionStats")
+
+Look for:
+COLLSCAN
+totalKeysExamined: 0
+
+Create index:
+db.students.createIndex({name:1})
+
+After index:
+db.students.find(
+    {name:"Amit"}
+).explain("executionStats")
+
+Look for:
+IXSCAN
+indexName: "name_1"
+
+
+N. ARRAY OPERATIONS
+-------------------
+
+Insert array:
+db.students.insertOne({
+    id:1,
+    name:"Amit",
+    phno:[9876543210]
+})
+
+Push value into array:
+db.students.update(
+    {id:1},
+    {$push:{phno:989032434}}
+)
+
+Add only if value does not already exist:
+db.students.update(
+    {id:1},
+    {$addToSet:{phno:92222224}}
+)
