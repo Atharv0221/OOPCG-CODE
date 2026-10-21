@@ -1,0 +1,170 @@
+ASSIGNMENT 6
+============
+
+XML FILE: Assign6.xml
+----------------------
+
+<library>
+    <books>
+        <book id="101">
+            <title>All Heros</title>
+            <author>Samnayik</author>
+            <category>Fantasy</category>
+            <price>450</price>
+            <publish>2024</publish>
+        </book>
+        <book id="102">
+            <title>SAAS</title>
+            <author>...</author>
+            <category>...</category>
+            <price>650</price>
+            <publish>2002</publish>
+        </book>
+        <book id="103">
+            <title>Software World</title>
+            <author>...</author>
+            <category>...</category>
+            <price>850</price>
+            <publish>2020</publish>
+        </book>
+        <book id="104">
+            <title>Database Management Systems</title>
+            <author>...</author>
+            <category>...</category>
+            <price>900</price>
+            <publish>2018</publish>
+        </book>
+        <book id="105">
+            <title>Computer Networks</title>
+            <author>...</author>
+            <category>...</category>
+            <price>750</price>
+            <publish>2019</publish>
+        </book>
+        <book id="106">
+            <title>Operating System Concepts</title>
+            <author>...</author>
+            <category>...</category>
+            <price>800</price>
+            <publish>2017</publish>
+        </book>
+        <book id="107">
+            <title>Java Programming</title>
+            <author>...</author>
+            <category>...</category>
+            <price>550</price>
+            <publish>2021</publish>
+        </book>
+        <book id="108">
+            <title>Python for Beginners</title>
+            <author>Mark Lutz</author>
+            <category>Programming</category>
+            <price>600</price>
+            <publish>2022</publish>
+        </book>
+    </books>
+</library>
+
+
+XQUERY 1: DISPLAY ALL BOOKS
+---------------------------
+
+xquery version "3.1";
+
+for $book in /library/books/book
+return $book
+
+
+XQUERY 2: FIND AVERAGE PRICE AND DISPLAY BOOKS ABOVE AVERAGE
+------------------------------------------------------------
+
+xquery version "3.1";
+
+let $books := /library/books/book
+
+let $average-price :=
+    avg(
+        for $book in $books
+        return xs:decimal($book/price)
+    )
+
+return
+    <results>
+        <average>{$average-price}</average>
+        <above-average>
+        {
+            for $book in $books
+            where xs:decimal($book/price) > $average-price
+            return $book
+        }
+        </above-average>
+    </results>
+
+
+XQUERY 3: SORT BOOKS BY PUBLICATION YEAR
+----------------------------------------
+
+xquery version "3.1";
+
+let $books := /library/books/book
+
+for $book in $books
+order by xs:integer($book/publish)
+return $book
+
+
+XQUERY 4: COMPLETE ASSIGNMENT 6 QUERY
+-------------------------------------
+
+xquery version "3.1";
+
+let $books := /library/books/book
+
+let $average-price :=
+    avg(
+        for $book in $books
+        return xs:decimal($book/price)
+    )
+
+return
+    <results>
+        <average>{$average-price}</average>
+        <above-average>
+        {
+            for $book in $books
+            where xs:decimal($book/price) > $average-price
+            order by xs:integer($book/publish)
+            return $book
+        }
+        </above-average>
+    </results>
+
+
+EXPECTED AVERAGE PRICE
+----------------------
+
+Average price = 693.75
+
+
+BOOKS ABOVE AVERAGE PRICE
+-------------------------
+
+Software World                 850
+Database Management Systems    900
+Computer Networks              750
+Operating System Concepts      800
+
+
+BOOKS SORTED BY PUBLICATION YEAR
+--------------------------------
+
+Operating System Concepts      2017
+Database Management Systems    2018
+Computer Networks              2019
+Software World                 2020
+Java Programming               2021
+Python for Beginners           2022
+All Heros                      2024
+
+
+END
